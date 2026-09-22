@@ -45,7 +45,7 @@ The regression suite checks **all 180 displayed times exactly** against live Cha
 ## Installation from GitHub
 
 ```sh
-npm install @kehila/zmanim@github:mmr94/kehila-zmanim#v1.1.0
+npm install '@kehila/zmanim@https://codeload.github.com/mmr94/kehila-zmanim/tar.gz/refs/tags/v1.1.1'
 ```
 
 Run `npm test` after changing a formula. The test suite includes Chabad.org-published reference times and high-latitude/date-zone cases.
