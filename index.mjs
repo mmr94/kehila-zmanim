@@ -1,6 +1,6 @@
-import * as chabadModule from './index.cjs';
+import * as chabadModule from './index.js';
 import * as hebcalCore from '@hebcal/core';
-import * as periodsModule from './periods.cjs';
+import * as periodsModule from './periods.js';
 
 // Interop CommonJS -> ESM, selon qui lit ce fichier.
 //

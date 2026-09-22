@@ -107,3 +107,16 @@ test('invalid dates and coordinates are rejected', () => {
   assert.throws(() => calculateChabadZmanim({...tripoli, latitude: ''}), RangeError);
   assert.throws(() => calculateChabadZmanim({...tripoli, candleLightingMinutes: -1}), RangeError);
 });
+
+test('Node package exports work in both CommonJS and ESM', async () => {
+  const commonjs = require('@kehila/zmanim');
+  const esm = await import('@kehila/zmanim');
+  assert.equal(typeof commonjs.getNextRestPeriod, 'function');
+  assert.equal(typeof esm.getNextRestPeriod, 'function');
+  assert.equal(esm.displayChabadZmanim(tripoli).tzeit.getTime(),
+    commonjs.displayChabadZmanim(tripoli).tzeit.getTime());
+
+  const options = {from: new Date('2026-09-22T09:00:00Z'), latitude: 46.77,
+    longitude: 23.59, israel: false, useChabad: true};
+  assert.deepEqual(esm.getNextRestPeriod(options), commonjs.getNextRestPeriod(options));
+});

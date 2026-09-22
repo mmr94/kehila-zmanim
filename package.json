@@ -1,6 +1,6 @@
 {
   "name": "@kehila/zmanim",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Chabad.org zmanim and Shabbat/Yom Tov periods for Kehila projects",
   "license": "MIT",
   "repository": {
@@ -19,9 +19,11 @@
   },
   "files": [
     "index.cjs",
+    "index.js",
     "index.mjs",
     "index.d.ts",
     "periods.cjs",
+    "periods.js",
     "README.md",
     "LICENSE"
   ],
