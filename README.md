@@ -42,10 +42,36 @@ Missing solar events return `null`. In particular, polar regions with no true su
 
 The regression suite checks **all 180 displayed times exactly** against live Chabad.org tables at identical custom GPS points: Tripoli and Jerusalem in September, Paris in September and December, and London in June (including the high-latitude dawn fallback). It also checks one London candle-lighting time. This establishes minute-level agreement for these cases, **not** sub-minute identity or a guarantee for every location/date. Location coordinates, time zone, local candle-lighting custom, and any Chabad.org future changes must still match. Chabad.org recommends leaving at least a two-minute practical margin around published zmanim.
 
+## Continuous Shabbat and Yom Tov periods
+
+`getNextRestPeriod()` returns the **current** period if it has not ended, or the next one. Consecutive Shabbat and festival days are one uninterrupted period, with every intermediate candle-lighting in `schedule`. The calendar follows `@hebcal/core` for diaspora/Israel holiday duration and parasha; the optional Chabad profile supplies the displayed minutes. `@hebcal/core` is a peer dependency so the application uses its own compatible version.
+
+```js
+const {getNextRestPeriod} = require('@kehila/zmanim');
+
+const period = getNextRestPeriod({
+  from: new Date('2026-09-22T09:00:00Z'),
+  latitude: 46.77,
+  longitude: 23.59,
+  israel: false,
+  useChabad: true,
+});
+
+// Souccot 2026 in Cluj: Friday entry, Saturday lighting after nightfall,
+// then the final Sunday exit. Format all dates in period.timeZone.
+for (const item of period.schedule) {
+  console.log(item.kind, item.at, item.afterNightfall);
+}
+```
+
+`getRestPeriods()` returns all complete periods in a window around `from` (`daysBefore`/`daysAfter`). `occasion.holidays` contains stable identifiers; `occasion.hasShabbat` and `occasion.parasha` distinguish an ordinary weekly Shabbat from a festival with no weekly reading. `schedule` items are chronological: `entry`, zero or more `candles`, `exit`. Each candle item identifies the following day's `holiday` and `shabbat`, so a Shabbat-then-festival or festival-then-Shabbat can be labeled accurately. `afterNightfall` is true for a second-night lighting that must not be shown before nightfall. All times are absolute `Date` instants; `timeZone` is an IANA zone inferred from the coordinates.
+
+These are calendar/display calculations, not a ruling about permitted actions. Chabad.org may apply location-specific candle-lighting offsets; pass `candleLightingMinutes` when the local custom differs. Compare against the same Chabad.org coordinates before relying on minute-level identity.
+
 ## Installation from GitHub
 
 ```sh
-npm install '@kehila/zmanim@https://codeload.github.com/mmr94/kehila-zmanim/tar.gz/refs/tags/v1.1.1'
+npm install '@kehila/zmanim@https://codeload.github.com/mmr94/kehila-zmanim/tar.gz/refs/tags/v1.2.0'
 ```
 
 Run `npm test` after changing a formula. The test suite includes Chabad.org-published reference times and high-latitude/date-zone cases.

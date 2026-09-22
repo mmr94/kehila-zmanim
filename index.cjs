@@ -173,4 +173,9 @@ function chabadDailyZmanim(options, {includeDeoraita = true} = {}) {
     .sort((a, b) => a.time - b.time);
 }
 
-module.exports = {ANGLES, calculateChabadZmanim, displayChabadZmanim, chabadDailyZmanim, timeAtAngle, roundToNearestMinute, roundChabadZman};
+const {createPeriodFunctions} = require('./periods.cjs');
+module.exports = {
+  ANGLES, calculateChabadZmanim, displayChabadZmanim, chabadDailyZmanim,
+  timeAtAngle, roundToNearestMinute, roundChabadZman,
+  ...createPeriodFunctions(() => require('@hebcal/core'), displayChabadZmanim),
+};

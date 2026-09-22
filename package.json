@@ -1,7 +1,7 @@
 {
   "name": "@kehila/zmanim",
-  "version": "1.1.1",
-  "description": "Chabad.org default zmanim calculations for Kehila projects",
+  "version": "1.2.0",
+  "description": "Chabad.org zmanim and Shabbat/Yom Tov periods for Kehila projects",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
     "index.cjs",
     "index.mjs",
     "index.d.ts",
+    "periods.cjs",
     "README.md",
     "LICENSE"
   ],
@@ -28,7 +29,14 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@hebcal/solar-calc": "1.1.2"
+    "@hebcal/solar-calc": "1.1.2",
+    "tz-lookup": "^6.1.25"
+  },
+  "peerDependencies": {
+    "@hebcal/core": ">=3 <7"
+  },
+  "devDependencies": {
+    "@hebcal/core": "^4.0.1"
   },
   "engines": {
     "node": ">=18"
