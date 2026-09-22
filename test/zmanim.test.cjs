@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const {spawnSync} = require('node:child_process');
 const {test} = require('node:test');
-const {calculateChabadZmanim, chabadDailyZmanim, roundToNearestMinute, timeAtAngle} = require('..');
+const {calculateChabadZmanim, displayChabadZmanim, chabadDailyZmanim, roundChabadZman, timeAtAngle} = require('..');
 
 const tripoli = {date: '2026-09-22', latitude: 32.8872, longitude: 13.1913};
 
@@ -13,40 +13,41 @@ function wallTime(date, timeZone) {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(roundToNearestMinute(date));
+  }).format(date);
 }
 
-test('published Chabad.org daily zmanim agree for Tripoli on 2026-09-22', () => {
-  const z = calculateChabadZmanim(tripoli);
-  const expected = {
-    alos: '05:38',
-    misheyakir: '06:11',
-    sunrise: '06:55',
-    latestShema: '09:55',
-    latestTefila: '10:57',
-    midday: '12:59',
-    minchaGedola: '13:31',
-    minchaKetana: '16:35',
-    plag: '17:52',
-    sunset: '19:04',
-    tzeit: '19:29',
-    midnight: '01:00',
-  };
-  // Chabad.org displays whole minutes. Its method for some derived deadlines
-  // rounds differently from nearest-minute; compare the underlying instant
-  // against the published minute with a one-minute tolerance.
-  for (const [name, published] of Object.entries(expected)) {
-    const [hour, minute] = published.split(':').map(Number);
-    const actual = z[name];
-    assert.ok(actual instanceof Date, name);
-    const parts = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Africa/Tripoli', hour: '2-digit', minute: '2-digit', hour12: false,
-    }).formatToParts(actual);
-    const actualMinute = Number(parts.find(x => x.type === 'hour').value) * 60
-      + Number(parts.find(x => x.type === 'minute').value);
-    const expectedMinute = hour * 60 + minute;
-    assert.ok(Math.abs(actualMinute - expectedMinute) <= 1, `${name}: ${wallTime(actual, 'Africa/Tripoli')} vs ${published}`);
+// Read from Chabad.org's live Halachic Times page using these exact custom GPS
+// coordinates and the named time zone. Each row contains 12 displayed times:
+// alos, misheyakir, sunrise, Shema, Shacharit, midday, mincha gedola,
+// mincha ketana, plag, sunset, tzeit (or holiday/Shabbat end), midnight.
+const references = [
+  ['Tripoli', 'Africa/Tripoli', 32.8872, 13.1913, '2026-09-21', '05:37 06:10 06:55 09:55 10:57 13:00 13:31 16:36 17:53 19:06 19:42 01:00', true],
+  ['Tripoli', 'Africa/Tripoli', 32.8872, 13.1913, '2026-09-22', '05:38 06:11 06:55 09:55 10:57 12:59 13:31 16:35 17:52 19:04 19:29 01:00'],
+  ['Tripoli', 'Africa/Tripoli', 32.8872, 13.1913, '2026-09-23', '05:38 06:12 06:56 09:55 10:57 12:59 13:30 16:34 17:50 19:03 19:28 00:59'],
+  ['Jerusalem', 'Asia/Jerusalem', 31.7683, 35.2137, '2026-09-21', '05:10 05:43 06:27 09:27 10:29 12:32 13:03 16:08 17:25 18:37 19:14 00:32', true],
+  ['Jerusalem', 'Asia/Jerusalem', 31.7683, 35.2137, '2026-09-22', '05:11 05:44 06:27 09:27 10:29 12:31 13:03 16:07 17:23 18:36 19:01 00:31'],
+  ['Jerusalem', 'Asia/Jerusalem', 31.7683, 35.2137, '2026-09-23', '05:11 05:44 06:28 09:27 10:28 12:31 13:02 16:06 17:22 18:35 19:00 00:31'],
+  ['Paris', 'Europe/Paris', 48.8566, 2.3522, '2026-09-21', '05:55 06:38 07:36 10:37 11:39 13:43 14:15 17:21 18:38 19:51 20:38 01:43', true],
+  ['Paris', 'Europe/Paris', 48.8566, 2.3522, '2026-09-22', '05:56 06:40 07:37 10:37 11:39 13:42 14:14 17:19 18:37 19:49 20:21 01:43'],
+  ['Paris', 'Europe/Paris', 48.8566, 2.3522, '2026-09-23', '05:58 06:41 07:38 10:38 11:39 13:42 14:14 17:18 18:35 19:47 20:19 01:43'],
+  ['Paris', 'Europe/Paris', 48.8566, 2.3522, '2026-12-20', '06:51 07:35 08:41 10:41 11:23 12:48 13:10 15:16 16:09 16:56 17:33 00:48'],
+  ['Paris', 'Europe/Paris', 48.8566, 2.3522, '2026-12-21', '06:51 07:36 08:41 10:42 11:24 12:48 13:10 15:17 16:09 16:56 17:34 00:48'],
+  ['Paris', 'Europe/Paris', 48.8566, 2.3522, '2026-12-22', '06:52 07:36 08:42 10:42 11:24 12:49 13:11 15:17 16:10 16:57 17:34 00:49'],
+  ['London', 'Europe/London', 51.5074, -0.1278, '2026-06-20', '01:02 03:07 04:43 08:49 10:13 13:02 13:45 17:58 19:43 21:21 22:36 01:02', true],
+  ['London', 'Europe/London', 51.5074, -0.1278, '2026-06-21', '01:02 03:08 04:43 08:49 10:13 13:02 13:45 17:58 19:43 21:22 22:10 01:02'],
+  ['London', 'Europe/London', 51.5074, -0.1278, '2026-06-22', '01:02 03:08 04:43 08:49 10:13 13:02 13:45 17:58 19:43 21:22 22:10 01:02'],
+];
+
+test('all 180 displayed minutes match Chabad.org for 4 cities and 3 seasons', () => {
+  const baseNames = ['alos', 'misheyakir', 'sunrise', 'latestShema', 'latestTefila', 'midday', 'minchaGedola', 'minchaKetana', 'plag', 'sunset'];
+  for (const [city, timeZone, latitude, longitude, date, expected, ending] of references) {
+    const z = displayChabadZmanim({date, latitude, longitude});
+    const names = [...baseNames, ending ? 'shabbatEnds' : 'tzeit', 'midnight'];
+    for (const [index, name] of names.entries()) {
+      assert.equal(wallTime(z[name], timeZone), expected.split(' ')[index], `${city} ${date} ${name}`);
+    }
   }
+  const z = calculateChabadZmanim(tripoli);
   assert.equal(z.alosFallback, false);
   assert.equal(z.shaahZmanitMs, (z.trueSunset - z.trueSunrise) / 12);
   assert.equal(z.candleLighting - z.sunset, -18 * 60000);
@@ -59,6 +60,12 @@ test('daily tzeit, Shabbat end, and optional 6.83° are distinct', () => {
   assert.ok(timeAtAngle({...tripoli, angle: 6.83, rising: false}) > z.tzeit);
   const custom = calculateChabadZmanim({...tripoli, candleLightingMinutes: 40});
   assert.equal(custom.candleLighting - custom.sunset, -40 * 60000);
+});
+
+test('London candle lighting matches Chabad.org on 2026-06-19', () => {
+  const options = {date: '2026-06-19', latitude: 51.5074, longitude: -0.1278};
+  assert.equal(wallTime(displayChabadZmanim(options).candleLighting, 'Europe/London'), '21:03');
+  assert.equal(roundChabadZman('candleLighting', calculateChabadZmanim(options).candleLighting).getSeconds(), 0);
 });
 
 test('Kehila display rows remain sorted and identify optional opinion separately', () => {

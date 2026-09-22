@@ -43,6 +43,8 @@ export declare const ANGLES: Readonly<{
 }>;
 
 export declare function calculateChabadZmanim(options: ChabadOptions): ChabadTimes;
+export declare function displayChabadZmanim(options: ChabadOptions): ChabadTimes;
 export declare function chabadDailyZmanim(options: ChabadOptions, displayOptions?: {includeDeoraita?: boolean}): Array<{nom: string; time: Date}>;
 export declare function timeAtAngle(options: LocationOptions & {angle: number; rising: boolean}): Date | null;
 export declare function roundToNearestMinute(date: Date | null): Date | null;
+export declare function roundChabadZman(name: keyof ChabadTimes, date: Date | null, options?: {alosFallback?: boolean}): Date | null;

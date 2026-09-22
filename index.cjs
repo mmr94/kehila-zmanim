@@ -126,11 +126,33 @@ function roundToNearestMinute(date) {
   return date ? new Date(Math.round(date.getTime() / 60000) * 60000) : null;
 }
 
+const ROUND_DOWN = new Set(['alos', 'latestShema', 'latestTefila', 'latestBiurChametz', 'midday', 'midnight']);
+const ROUND_UP = new Set(['misheyakir', 'minchaGedola', 'minchaKetana', 'plag', 'tzeit']);
+
+/** Chabad.org's displayed-minute convention, inferred from its live tables. */
+function roundChabadZman(name, date, {alosFallback = false} = {}) {
+  if (!date) return null;
+  if (!(date instanceof Date) || !Number.isFinite(date.getTime())) throw new TypeError('Invalid zman date');
+  const minute = date.getTime() / 60000;
+  const rounding = name === 'alos' && alosFallback ? Math.round
+    : ROUND_DOWN.has(name) ? Math.floor
+      : ROUND_UP.has(name) ? Math.ceil : Math.round;
+  return new Date(rounding(minute) * 60000);
+}
+
+/** Whole-minute values as displayed by Chabad.org; use raw values for scheduling. */
+function displayChabadZmanim(options) {
+  const raw = calculateChabadZmanim(options);
+  return Object.fromEntries(Object.entries(raw).map(([name, value]) => [
+    name, value instanceof Date ? roundChabadZman(name, value, {alosFallback: raw.alosFallback}) : value,
+  ]));
+}
+
 /** Kehila's existing Hebrew display rows, including two optional opinions. */
 function chabadDailyZmanim(options, {includeDeoraita = true} = {}) {
-  const times = calculateChabadZmanim(options);
+  const times = displayChabadZmanim(options);
   const rows = [
-    {nom: 'עלות השחר 120 דקות', time: timeAtAngle({...options, angle: 26, rising: true})},
+    {nom: 'עלות השחר 120 דקות', time: roundChabadZman('alos', timeAtAngle({...options, angle: 26, rising: true}))},
     {nom: 'עלות השחר 72 דקות', time: times.alos},
     {nom: 'תפילין ושמע', time: times.misheyakir},
     {nom: 'נץ החמה', time: times.sunrise},
@@ -145,10 +167,10 @@ function chabadDailyZmanim(options, {includeDeoraita = true} = {}) {
     {nom: 'חצות לילה', time: times.midnight},
   ];
   if (includeDeoraita) {
-    rows.push({nom: 'צאת דאורייתא', time: timeAtAngle({...options, angle: 6.83, rising: false})});
+    rows.push({nom: 'צאת דאורייתא', time: roundChabadZman('tzeit', timeAtAngle({...options, angle: 6.83, rising: false}))});
   }
   return rows.filter(row => row.time instanceof Date && Number.isFinite(row.time.getTime()))
     .sort((a, b) => a.time - b.time);
 }
 
-module.exports = {ANGLES, calculateChabadZmanim, chabadDailyZmanim, timeAtAngle, roundToNearestMinute};
+module.exports = {ANGLES, calculateChabadZmanim, displayChabadZmanim, chabadDailyZmanim, timeAtAngle, roundToNearestMinute, roundChabadZman};
