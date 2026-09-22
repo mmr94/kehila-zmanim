@@ -64,14 +64,14 @@ for (const item of period.schedule) {
 }
 ```
 
-`getRestPeriods()` returns all complete periods in a window around `from` (`daysBefore`/`daysAfter`). `occasion.holidays` contains stable identifiers; `occasion.hasShabbat` and `occasion.parasha` distinguish an ordinary weekly Shabbat from a festival with no weekly reading. `schedule` items are chronological: `entry`, zero or more `candles`, `exit`. Each candle item identifies the following day's `holiday` and `shabbat`, so a Shabbat-then-festival or festival-then-Shabbat can be labeled accurately. `afterNightfall` is true for a second-night lighting that must not be shown before nightfall. All times are absolute `Date` instants; `timeZone` is an IANA zone inferred from the coordinates.
+`getRestPeriods()` returns all complete periods in a window around `from` (`daysBefore`/`daysAfter`). `occasion.holidays` contains stable identifiers; `occasion.hasShabbat` and `occasion.parasha` distinguish an ordinary weekly Shabbat from a festival with no weekly reading. `schedule` items are chronological: `entry`, zero or more `candles`, `exit`. Each candle item identifies the following day's `holiday` and `shabbat`; the exit item identifies the day ending then. This keeps labels accurate for a Shabbat-then-festival, a festival-then-Shabbat, and a combined final day. `afterNightfall` is true for a second-night lighting that must not be shown before nightfall. All times are absolute `Date` instants; `timeZone` is an IANA zone inferred from the coordinates.
 
 These are calendar/display calculations, not a ruling about permitted actions. Chabad.org may apply location-specific candle-lighting offsets; pass `candleLightingMinutes` when the local custom differs. Compare against the same Chabad.org coordinates before relying on minute-level identity.
 
 ## Installation from GitHub
 
 ```sh
-npm install '@kehila/zmanim@https://codeload.github.com/mmr94/kehila-zmanim/tar.gz/refs/tags/v1.2.0'
+npm install '@kehila/zmanim@https://codeload.github.com/mmr94/kehila-zmanim/tar.gz/refs/tags/v1.2.1'
 ```
 
 Run `npm test` after changing a formula. The test suite includes Chabad.org-published reference times and high-latitude/date-zone cases.

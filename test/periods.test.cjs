@@ -37,6 +37,8 @@ test('Cluj: Shabbat + two Sukkot days is one Friday-Sunday period, never an 18:5
   assert.equal(period.schedule[0].shabbat, true);
   assert.equal(period.schedule[1].holiday, 'SUKKOT');
   assert.equal(period.schedule[1].afterNightfall, true);
+  assert.equal(period.schedule[2].holiday, 'SUKKOT');
+  assert.equal(period.schedule[2].shabbat, false);
   assert.deepEqual(period.schedule.map(item => wall(item.at, period.timeZone)), ['19:00', '20:01', '19:58']);
   assert.deepEqual(period.schedule.map(item => item.at.toISOString().slice(0, 10)),
     ['2026-09-25', '2026-09-26', '2026-09-27']);
@@ -85,6 +87,8 @@ test('Sukkot in Israel lasts one day, even when it begins on Friday', () => {
   assert.deepEqual(period.occasion.holidays, ['SUKKOT']);
   assert.equal(period.occasion.hasShabbat, true);
   assert.deepEqual(scheduleKinds(period), ['entry', 'exit']);
+  assert.equal(period.schedule[1].holiday, 'SUKKOT');
+  assert.equal(period.schedule[1].shabbat, true);
   assert.equal(period.end.toISOString().slice(0, 10), '2026-09-26');
 });
 
@@ -97,6 +101,8 @@ test('Pesach attached to Shabbat preserves all intermediate candles in order', (
   assert.equal(period.schedule[0].shabbat, false);
   assert.equal(period.schedule[2].holiday, null);
   assert.equal(period.schedule[2].shabbat, true);
+  assert.equal(period.schedule[3].holiday, null);
+  assert.equal(period.schedule[3].shabbat, true);
   assert.equal(period.schedule[1].at.getTime(), displayChabadZmanim({...PARIS, date: '2027-04-22'}).shabbatEnds.getTime());
   assert.equal(period.schedule[2].at.getTime(), displayChabadZmanim({...PARIS, date: '2027-04-23'}).candleLighting.getTime());
 });

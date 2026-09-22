@@ -132,7 +132,11 @@ function createPeriodFunctions(loadCore, displayChabadZmanim) {
           ? holidayFromDescription(event.linkedEvent.getDesc()) : null;
         if (holiday) opened.holidays.add(holiday);
         const at = eventInstant(event, options, displayChabadZmanim, {HavdalahEvent, flags});
-        opened.schedule.push({kind: 'exit', at});
+        opened.schedule.push({
+          kind: 'exit', at,
+          holiday: holidayByDay.get(civilDate(event)) || null,
+          shabbat: event.getDate().greg().getDay() === 6,
+        });
         if (opened.start && at && opened.schedule.every(item => item.at instanceof Date && Number.isFinite(item.at.getTime())) && at > opened.start) {
           periods.push({
             start: opened.start, end: at, schedule: opened.schedule,

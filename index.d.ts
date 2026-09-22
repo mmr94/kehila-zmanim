@@ -69,7 +69,7 @@ export interface RestPeriod {
     kind: 'entry' | 'candles' | 'exit';
     at: Date;
     afterNightfall?: boolean;
-    /** Occasion beginning after this candle-lighting, if any. */
+    /** Occasion beginning after candles, or ending at an exit, if any. */
     holiday?: RestHoliday | null;
     shabbat?: boolean;
   }>;
