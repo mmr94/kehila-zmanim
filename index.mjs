@@ -1,6 +1,17 @@
-import chabad from './index.cjs';
+import * as chabadModule from './index.cjs';
 import * as hebcalCore from '@hebcal/core';
-import periods from './periods.cjs';
+import * as periodsModule from './periods.cjs';
+
+// Interop CommonJS -> ESM, selon qui lit ce fichier.
+//
+// Node rend `module.exports` pour un `import x from './y.cjs'`. webpack, lui,
+// rend l'ESPACE DE NOMS, qui porte `module.exports` sous `default` : tous les
+// `chabad.*` ci-dessous valaient alors `undefined`, et l'appel à
+// `createPeriodFunctions` jetait « is not a function » au CHARGEMENT du module
+// — donc page blanche dans le backoffice et sur le site public, qui sont tous
+// deux empaquetés par webpack. On accepte les deux formes.
+const chabad = chabadModule.default || chabadModule;
+const periods = periodsModule.default || periodsModule;
 
 export const ANGLES = chabad.ANGLES;
 export const calculateChabadZmanim = chabad.calculateChabadZmanim;
